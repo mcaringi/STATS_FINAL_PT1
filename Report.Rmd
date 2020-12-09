@@ -1,0 +1,183 @@
+---
+title: Examining the Effectiveness of a Written Methodology Discussion based on a
+  Reproducibility Paper
+author: "Matthew Caringi"
+date: "9 December 2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+abstract: In this paper, the examination and reproducibility of a written methodology discussion is preformed to view its effectiveness and ability to maintain the author’s originality. Assumptions on data filtering, variable grouping, and type of linear regression model will be observed to define the differences between the results of this article to the original article. Preliminary results reveal similar trends to the original article thus supporting this methodology mode. To strengthen this argument, more reproducibility papers must be preformed due to the fact that the ability to reproduce articles are based on the reader’s interpretation which is highly variable.
+bibliography: References.bib
+---
+**Keywords** Reproducibility; Tom Cardoso; Risk assessments; Bayesian linear regression
+
+The following article was written using R (@citeR) and the final report was complied with R markdown (@citermarkdown). The following packages were used in this paper: Tidyverse (@citetidyverse), ggplot2 (@citeggplot2). 
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+```
+
+## Introduction
+  In the Globe and Mail, an article, “Bias behind bars: A Globe investigation finds a prison system stacked against Black and Indigenous inmates” (@cardoso_2020), was written describing racial bias through the analysis of the inmate’s risk assessments using data from the Correctional Service of Canada. The author/crime and justice reporter, Tom Cardoso, investigated this aspect by observing the inmate’s initial assessment scores set by correctional officers to determine the inmate’s security level. They noticed how Black and Indigenous inmates were subjected to harder scoring thus resulted in a more stricter security level such as maximum security. To support these results, Cardoso utilized multiple linear regression models of the CSC dataset in order to examine the influence of an inmate’s personal characteristics on their security level. Additionally, these initial risk assessment scores judge the inmates on certain aspects which heavily influences the decisions after conviction, for example parole request. Cardoso also makes use of more linear regression models to investigate inmate reintegration back into society. This revealed that Black and Indigenous inmates would reintegrate better and are less likely to reoffend than White inmates. Overall, Cardoso present relevant conclusions on how Black and Indigenous inmates are subjected to more stricter assessments while showing better reintegration potential.
+
+  Within research articles, reproducibility is extremely important for the validation of results. When a paper is not reproducible, this decreases the credibility of the paper and results in the article being less impactful. If a paper cannot be reproduced by another person, this is normally due to the original’s author lack of instructions in the methodology or in the worst case, the original author’s manipulation of the results to favor their hypothesis. To avoid this reduction in credibility, the original work or R code can be linked. Unfortunately, in the professional field this is not a common practice due to the fact that authors do not want others to steal and plagiarism their work. Therefore, in this paper we attempt to reproduce Tom Cardoso’s article based on the posted methodology (@cardoso_method_2020). Our research aim examines the effectiveness of a written methodology to provide adequate instructions for reproducibility with maintaining the author’s recognition for their original work. 
+
+  In this paper, we reproduced the data results and analysis found in Tom Cardoso’s article based on a written story-like methodology. To note, the R code was not posted or linked thus decisions are based on our assumptions from reading the methodology discussion. Following the methodology, the Correctional Service of Canada dataset provided by the Globe and Mail was used. Filtering and grouping of the dataset were followed as best as possible based on our interpretation and hints from the author such as ‘filtering this allowed these many observations/rows’.  One major interpretation was the specific type of linear regression model used. In this paper, we used multiple Bayesian linear regression models while it is unclear which type of linear regression model was used in Cardoso’s original article. 
+
+```{r, include=FALSE}
+data <- read.csv("The_Globe_and_Mail_CSC_OMS_2012-2018_20201022235635.csv")
+
+#GROUPING & FILTERING
+grouped_data <- data %>%
+  filter(!JURISDICTION == "PROVINCIAL") %>%
+  mutate(
+    race_grouped = case_when(
+      RACE=="White" ~ "White",
+      RACE=="North American" ~ "Indigenous",
+      RACE=="Metis" ~ "Indigenous",
+      RACE=="Inuit" ~ "Indigenous",
+      RACE=="S. E. Asian" ~ "Other Racial Groups",
+      RACE=="Arab/West Asian" ~ "Other Racial Groups",
+      RACE=="Chinese" ~ "Other Racial Groups",
+      RACE=="" ~ "Other Racial Groups",
+      RACE=="Asiatic" ~ "Other Racial Groups",
+      RACE=="Unknown" ~ "Other Racial Groups",
+      RACE=="East Indian" ~ "Other Racial Groups",
+      RACE=="Hispanic" ~ "Other Racial Groups",
+      RACE=="Japanese" ~ "Other Racial Groups",
+      RACE=="Multirac/Ethnic" ~ "Other Racial Groups",
+      RACE=="Caribbean" ~ "Black",
+      RACE=="Unable Specify" ~ "Other Racial Groups",
+      RACE=="Euro.-Southern" ~ "Other Racial Groups",
+      RACE=="Asi-E/Southeast" ~ "Other Racial Groups",
+      RACE=="Arab" ~ "Other Racial Groups",
+      RACE=="Euro.-Eastern" ~ "Other Racial Groups",
+      RACE=="Oceania" ~ "Other Racial Groups",
+      RACE=="Asian-South" ~ "Other Racial Groups",
+      RACE=="Euro.-Western" ~ "Other Racial Groups",
+      RACE=="Sub-Sahara Afri" ~ "Black",
+      RACE=="Asian-West" ~ "Other Racial Groups",
+      RACE=="European French" ~ "Other Racial Groups",
+      RACE=="British Isles" ~ "Other Racial Groups",
+      RACE=="Euro.-Northern" ~ "Other Racial Groups",
+    ))
+```
+
+## Data
+NOT COMPLETE
+
+**PLAN**
+- touch up graphs ex. add citations, text
+
+
+```{r, echo=FALSE}
+# Pie chart of gender in jail
+pie_gender <- grouped_data %>%
+  filter(IN.CUSTODY.COMMUNITY == "In Custody") %>%
+  ggplot(aes(y = (..count..)/sum(..count..), x= "", fill = GENDER)) +
+  geom_bar(stat = "count", width = 1) +
+  coord_polar("y", start=0) +
+  scale_fill_brewer(palette="Blues") +
+  theme_minimal() +
+  theme(axis.text.x  = element_text(angle=45, hjust = 1)) +
+  labs(
+    title = "Figure 1: Distribution of Gender",
+    x = " ",
+    y = " ",
+    caption = "CITE")
+pie_gender  
+```
+
+```{r, echo=FALSE}
+# Pie chart of race in jail
+pie_race <- grouped_data %>%
+  filter(!race_grouped == "NA") %>%
+  ggplot(aes(y = (..count..)/sum(..count..), x= "", fill = race_grouped)) +
+  geom_bar(stat = "count", width = 1) +
+  coord_polar("y", start=0) +
+  scale_fill_brewer(palette="Blues") +
+  theme_minimal() +
+  theme(axis.text.x  = element_text(angle=45, hjust = 1)) +
+  labs(
+    title = "Figure 2: Distribution of Race Grouping",
+    x = " ",
+    y = " ",
+    caption = "CITE")
+pie_race 
+```
+
+```{r, echo=FALSE}
+#reintegration potential inmate scores across race
+reint_pot_race_graph <- grouped_data %>%
+  filter(!REINTEGRATION.POTENTIAL == "") %>%
+  filter(!race_grouped == "NA") %>%
+  filter(!race_grouped == "Other Racial Groups") %>%
+  mutate(REINTEGRATION.POTENTIAL = fct_relevel(REINTEGRATION.POTENTIAL, "LOW", "MEDIUM", "HIGH")) %>%
+  ggplot( aes(x = race_grouped, fill = REINTEGRATION.POTENTIAL)) + 
+  geom_bar(position = "dodge") +
+  theme(axis.text.x  = element_text(angle=45, hjust = 1)) +
+  scale_fill_brewer(palette="Blues") +
+  theme_minimal() +
+  theme(axis.text.x  = element_text(angle=45, hjust = 1)) +
+  labs(
+    title = "Figure : ",
+    x = "Ethnicity",
+    y = "Number of Respondents",
+    caption = "CITE")
+reint_pot_race_graph
+```
+
+```{r, echo=FALSE}
+#Offender security level  across race
+off_sec_race_graph <- grouped_data %>%
+  filter(!OFFENDER.SECURITY.LEVEL == "") %>%
+  filter(!race_grouped == "NA") %>%
+  filter(!race_grouped == "Other Racial Groups") %>%
+  mutate(OFFENDER.SECURITY.LEVEL = fct_relevel(OFFENDER.SECURITY.LEVEL, "MINIMUM", "MEDIUM", "MAXIMUM")) %>%
+  ggplot( aes(x = race_grouped, fill = OFFENDER.SECURITY.LEVEL)) + 
+  geom_bar(position = "dodge") +
+  theme(axis.text.x  = element_text(angle=45, hjust = 1)) +
+  scale_fill_brewer(palette="Blues") +
+  theme_minimal() +
+  theme(axis.text.x  = element_text(angle=45, hjust = 1)) +
+  labs(
+    title = "Figure : ",
+    x = "Ethnicity",
+    y = "Number of Respondents",
+    caption = "CITE")
+off_sec_race_graph
+```
+
+## Model
+NOT COMPLETE
+
+**PLAN**
+- Bayesian linear regression model 
+- have to weigh the offenses by points
+```{r}
+
+```
+
+## Results
+NOT COMPLETE
+
+**PLAN**
+- state the data from the graphs (anything off etc)
+- look at the result of my models (anything off, significant etc)
+```{r}
+
+```
+
+## Discussion
+NOT COMPLETE
+
+**PLAN**
+- compare data graphs to original article
+- does my assumptions make a huge difference
+- do my models have a different outcome
+- future work - more reproducibility articles from other people (increase sample size to strengten argument)
+- 
+
+## References
+
